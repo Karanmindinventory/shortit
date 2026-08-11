@@ -1,20 +1,19 @@
-const { Sequelize, DataTypes, where } = require("sequelize")
+const { Sequelize, DataTypes, where } = require("sequelize");
+const { encryptorFunction } = require("./encryptor/encryptorFunction");
 
 const sequelizeConnection = new Sequelize('shortIT', 'karan', 'karan8141', {
     host: '127.0.0.1',
     port: '3306',
     dialect: 'mysql',
-    logging: console.log
+    logging: false
 });
 
 (async function connectionToDB(params) {
     try {
         const connectionOBJ = await sequelizeConnection.authenticate();
-        console.log(connectionOBJ);
         console.log("SQL IS CONNECTED SUCCESFULLY")
-        await updateUserName(1, 'aneri')
-        await deleteUser(2)
-        await getAllUser()
+        await insertNewData('mahek')
+        // await getAllUser()
     } catch (error) {
         console.error(error)
     }
@@ -48,6 +47,8 @@ async function insertNewData(data) {
         const newUser = await dummyData.create({
             userName: data
         })
+        console.log(newUser?.id)
+        console.log(encryptorFunction(newUser?.id))
     } catch (error) {
         console.log(error)
     }
