@@ -1,0 +1,32 @@
+{
+  "name": "shortit",
+  "version": "1.0.1",
+  "description": "A Simple url shortner used with the ORM",
+  "keywords": [
+    "URL",
+    "SHORTNER",
+    "LEARN"
+  ],
+  "homepage": "https://github.com/Karanmindinventory/shortit#readme",
+  "bugs": {
+    "url": "https://github.com/Karanmindinventory/shortit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Karanmindinventory/shortit.git"
+  },
+  "license": "ISC",
+  "author": "Karan Gohel",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start" : "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "mysql2": "^3.23.3",
+    "sequelize": "^6.37.8",
+    "sqlite3": "^6.0.1"
+  }
+}
