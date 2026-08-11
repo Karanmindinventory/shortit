@@ -11,3 +11,5 @@ A simple URL shortner which is build to learn the ORM using sequlize orm in node
 # ADDITION
 - we are gonna keep table name as 1 2 and 3 ... 111 ...1111...1111 only not URL and all so the the concatication cost reduced even more.
 - and gonna create a trigger there so we can actively track and monitor those id's
+
+- **THIS ENSURE THE RETRIVAL TIME 1 to 5 MS**
