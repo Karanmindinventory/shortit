@@ -1,2 +1,13 @@
 # shortit
 A simple URL shortner which is build to learn the ORM using sequlize orm in node.js
+
+# SHARDING DOCUMENATAION
+
+- we are gonna maintain one central table which contains the last table name and that table is only with the one row which contains the last table name like url_1 or what ever and we are gonna have column as current value so it dispaly the current items in the table if it 100 we are gonna create a new table and update table name here and also gonna upate the counter here or we can automate this counter
+- in every new table we are gonna keep the name as url_(table numeber) and this table number never gonna contains any 0 it need to keep the number form 1 to 9 like 1 2 3 ...99 and then if 100 then 111 and if 1000 then 1111 of 11110 then 11111 just like this it should not contains 0
+- and at the encryption time or a code generation time we are gonna keep the table number like 111 append 0 and append the id of the data and we are gonna generate the on number like 11101 where first occuring 0 is the seprator and 111 is table name and another 1 is the id of it.
+- and at the decryption time we gonna feed the code in the decryptor function and imageing our function return a code like 111090 ten the 111 is table and 90 is id so our table name gonna be url_111 and query gonnna be select * from url_111 where id = 90 simple
+
+# ADDITION
+- we are gonna keep table name as 1 2 and 3 ... 111 ...1111...1111 only not URL and all so the the concatication cost reduced even more.
+- and gonna create a trigger there so we can actively track and monitor those id's
