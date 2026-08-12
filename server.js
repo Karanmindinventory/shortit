@@ -1,76 +1,31 @@
-const { Sequelize, DataTypes, where } = require("sequelize");
-const { encryptorFunction } = require("./encryptor/encryptorFunction");
+const express = require('express');
+const { initializeShards } = require('./db/shardingManager');
+const { sequelizeConnection } = require('./db/config');
+const { shortenUrl, redirectUrl } = require('./controllers/urlController');
 
-const sequelizeConnection = new Sequelize('shortIT', 'karan', 'karan8141', {
-    host: '127.0.0.1',
-    port: '3306',
-    dialect: 'mysql',
-    logging: false
-});
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-(async function connectionToDB(params) {
+app.use(express.json());
+
+app.post('/shorten', shortenUrl);
+app.get('/:code', redirectUrl);
+
+async function startServer() {
     try {
-        const connectionOBJ = await sequelizeConnection.authenticate();
-        console.log("SQL IS CONNECTED SUCCESFULLY")
-        await insertNewData('mahek')
-        // await getAllUser()
+        await sequelizeConnection.authenticate();
+        console.log("SQL IS CONNECTED SUCCESSFULLY");
+
+        await initializeShards();
+        console.log("Sharding metadata and tables initialized");
+
+        app.listen(PORT, () => {
+            console.log(`Server is running on http://localhost:${PORT}`);
+        });
     } catch (error) {
-        console.error(error)
-    }
-    finally {
-        sequelizeConnection.close()
-    }
-})()
-
-const dummyData = sequelizeConnection.define('dummyData', {
-    id: {
-        type: DataTypes.BIGINT,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    userName: {
-        type: DataTypes.STRING(150),
-        allowNull: false
-    }
-}, {
-    tableName: 'dummyData',
-    timestamps: false
-})
-
-async function getAllUser() {
-    const user = await dummyData.findAll();
-    console.log(JSON.stringify(user, null, 2))
-}
-
-async function insertNewData(data) {
-    try {
-        const newUser = await dummyData.create({
-            userName: data
-        })
-        console.log(newUser?.id)
-        console.log(encryptorFunction(newUser?.id))
-    } catch (error) {
-        console.log(error)
+        console.error("Failed to start server:", error);
+        process.exit(1);
     }
 }
 
-async function updateUserName(id, name) {
-    try {
-        await dummyData.update(
-            { userName: name },
-            { where: { id: id } }
-        )
-    } catch (error) {
-        console.log(error)
-    }
-}
-
-async function deleteUser(id) {
-    try {
-        await dummyData.destroy({
-            where: { id: id }
-        })
-    } catch (error) {
-        console.log(error)
-    }
-}
+startServer();

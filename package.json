@@ -20,13 +20,14 @@
   "type": "commonjs",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "npx nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "express": "^5.2.1",
     "hashids": "^2.3.0",
     "mysql2": "^3.23.3",
+    "nodemon": "^3.1.14",
     "sequelize": "^6.37.8",
     "sqlite3": "^6.0.1"
   }
