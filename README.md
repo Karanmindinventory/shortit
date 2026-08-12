@@ -66,4 +66,5 @@ Note: Performance peaks at 2 cores and degrades beyond that because this machine
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | 20 Cores | 1,000,000 | 57,224 | 17,475.19 | 2.85 ms | 0.52 ms | 93.06 ms | 4.89 ms | 8.37 ms |
 
+
 On a machine with 20 real cores available, the same code with zero changes processed 1,000,000 database-backed redirects in under 60 seconds at an average latency of 2.85 milliseconds. This demonstrates that the bottleneck in the Mac Mini tests was purely the hardware, not the algorithm.
