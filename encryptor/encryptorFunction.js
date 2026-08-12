@@ -8,7 +8,6 @@ function encryptorFunction(table_id, id) {
 }
 function decryptFunction(code) {
     const value = String(hashids.decode(code)[0]);
-    console.log(value)
     let zeroIndex = value.indexOf('0');
 
     const table_id = value.substring(0, zeroIndex);
@@ -16,5 +15,4 @@ function decryptFunction(code) {
 
     return { "table_id": table_id, "id": id }
 }
-console.log(decryptFunction('gMolEPr3ZYW0'))
 module.exports = { encryptorFunction, decryptFunction };
