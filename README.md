@@ -11,5 +11,5 @@ A simple URL shortner which is build to learn the ORM using sequlize orm in node
 # ADDITION
 - we are gonna keep table name as 1 2 and 3 ... 111 ...1111...1111 only not URL and all so the the concatication cost reduced even more.
 - and gonna create a trigger there so we can actively track and monitor those id's
-
+- now here becuse 1 writing table is creating a bottle neck we are gonna maintain the 5 seprate table and we are writing data in the round-robin patter and each we need to make a one function who prevent the same table name like if we have table name like 1 2 3 4 5 and 1 and 5 are both gonna filled at same or somthing like that both are not gonna assign the number 6 so for the we are gonna keep on more row with the named next table for safe gaurd we always gonna take this table name too seprated like the range gonna be first table is 1 then other table gonnna be 11111 and other tbale gonnna be 22222 and other table gonnan be 33333 and otehr table gonna be 44444 so at any point they where not gonna fill the same time
 - **THIS ENSURE THE RETRIVAL TIME 1 to 5 MS**
