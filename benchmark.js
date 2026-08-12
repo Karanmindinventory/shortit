@@ -25,7 +25,7 @@ async function run() {
     console.log('Codes generated: ', codes.join(', '));
     console.log('Starting concurrent requests...');
 
-    const totalRequests = 500000;
+    const totalRequests = 1000000;
     let completed = 0;
     const times = [];
     const startAll = Date.now();
