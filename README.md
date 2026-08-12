@@ -16,13 +16,16 @@ A simple URL shortner which is build to learn the ORM using sequlize orm in node
 
 ### Benchmark Results
 
-* **Total Requests:** 500,000
-* **Total Time:** 227.94 seconds (227,939 ms)
-* **Throughput:** 2,193.57 req/sec
 
-#### Latency
-* **Average:** 22.75 ms
-* **Fastest:** 7.75 ms
-* **Slowest:** 269.22 ms
-* **P95:** 36.25 ms
-* **P99:** 47.59 ms
+| Configuration | Total Requests | Total Time (ms) | Throughput (req/sec) | Avg Latency | Fastest Request | Slowest Request | P95 Latency | P99 Latency |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **1 Core** | 500,000 | 227,939 | 2,193.57 | 22.75 ms | 7.75 ms | 269.22 ms | 36.25 ms | 47.59 ms |
+| **2 Cores** | 500,000 | 201,536 | 2,480.95 | 20.09 ms | 1.38 ms | 230.56 ms | 33.88 ms | 45.10 ms |
+| **2 Cores (1M)** | 1,000,000 | 302,280 | **3,308.19** | **15.07 ms** | 1.66 ms | 198.83 ms | **23.70 ms** | **32.06 ms** |
+| **3 Cores** | 500,000 | 172,265 | 2,902.50 | 17.17 ms | 1.35 ms | **191.90 ms** | 33.02 ms | 50.98 ms |
+| **3 Cores (1M)** | 1,000,000 | 355,736 | 2,811.07 | 17.73 ms | 1.16 ms | 200.95 ms | 35.86 ms | 52.35 ms |
+| **4 Cores** | 500,000 | 219,349 | 2,279.47 | 21.88 ms | 1.32 ms | 346.40 ms | 49.38 ms | 68.50 ms |
+| **5 Cores (1M)** | 1,000,000 | 303,974 | 3,289.76 | 15.15 ms | **1.06 ms** | 346.21 ms | 30.38 ms | 41.48 ms |
+| **8 Cores** | 500,000 | 190,483 | 2,624.91 | 18.99 ms | 1.07 ms | 419.92 ms | 46.03 ms | 69.47 ms |
+| **16 Cores** | 500,000 | 212,809 | 2,349.52 | 21.22 ms | 1.01 ms | 818.83 ms | 48.40 ms | 71.10 ms |
+
