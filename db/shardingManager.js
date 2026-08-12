@@ -2,6 +2,8 @@ const { sequelizeConnection } = require("./config");
 const { DataTypes, QueryTypes } = require("sequelize");
 
 const MAX_ROWS_PER_TABLE = 25000;
+const INITIAL_SHARDS = ['1', '11111', '22222', '33333', '44444'];
+let roundRobinIndex = 0;
 
 const ShardMetadata = sequelizeConnection.define('shard_metadata', {
     active_table_id: {
@@ -22,15 +24,21 @@ const ShardMetadata = sequelizeConnection.define('shard_metadata', {
 async function initializeShards() {
     await ShardMetadata.sync();
 
-    const metadata = await ShardMetadata.findOne();
-    if (!metadata) {
-        await ShardMetadata.create({
-            active_table_id: '1',
-            current_count: 0
-        });
+    const metadataCount = await ShardMetadata.count();
+    if (metadataCount === 0) {
+        for (const shardName of INITIAL_SHARDS) {
+            await ShardMetadata.create({
+                active_table_id: shardName,
+                current_count: 0
+            });
+            await createDataTable(shardName);
+        }
+    } else {
+        const activeShards = await ShardMetadata.findAll();
+        for (const shard of activeShards) {
+            await createDataTable(shard.active_table_id);
+        }
     }
-
-    await createDataTable('1');
 }
 
 async function createDataTable(tableName) {
@@ -54,20 +62,27 @@ function getNextSafeTableName(currentName) {
 }
 
 async function insertUrl(url) {
-    let metadata = await ShardMetadata.findOne();
+    let activeShards = await ShardMetadata.findAll({ order: [['active_table_id', 'ASC']] });
 
-    if (metadata.current_count >= MAX_ROWS_PER_TABLE) {
-        const newTableName = getNextSafeTableName(metadata.active_table_id);
+    if (activeShards.length === 0) throw new Error("No active shards found");
+
+    const selectedShardIndex = roundRobinIndex;
+    let targetMetadata = activeShards[selectedShardIndex];
+
+    roundRobinIndex = (roundRobinIndex + 1) % activeShards.length;
+
+    if (targetMetadata.current_count >= MAX_ROWS_PER_TABLE) {
+        const newTableName = getNextSafeTableName(targetMetadata.active_table_id);
         await createDataTable(newTableName);
 
-        await metadata.destroy();
-        metadata = await ShardMetadata.create({
+        await targetMetadata.destroy();
+        targetMetadata = await ShardMetadata.create({
             active_table_id: newTableName,
             current_count: 0
         });
     }
 
-    const currentTable = metadata.active_table_id;
+    const currentTable = targetMetadata.active_table_id;
 
     const insertQuery = `INSERT INTO \`${currentTable}\` (original_url) VALUES (?)`;
     const [result] = await sequelizeConnection.query(insertQuery, {
@@ -76,7 +91,8 @@ async function insertUrl(url) {
     });
 
     const newId = result;
-    await metadata.increment('current_count');
+
+    await targetMetadata.increment('current_count');
 
     return { table_id: currentTable, id: newId };
 }
