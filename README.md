@@ -13,3 +13,24 @@ A simple URL shortner which is build to learn the ORM using sequlize orm in node
 - and gonna create a trigger there so we can actively track and monitor those id's
 - now here becuse 1 writing table is creating a bottle neck we are gonna maintain the 5 seprate table and we are writing data in the round-robin patter and each we need to make a one function who prevent the same table name like if we have table name like 1 2 3 4 5 and 1 and 5 are both gonna filled at same or somthing like that both are not gonna assign the number 6 so for the we are gonna keep on more row with the named next table for safe gaurd we always gonna take this table name too seprated like the range gonna be first table is 1 then other table gonnna be 11111 and other tbale gonnna be 22222 and other table gonnan be 33333 and otehr table gonna be 44444 so at any point they where not gonna fill the same time
 - **THIS ENSURE THE RETRIVAL TIME 1 to 5 MS**
+## 📊 Benchmark Results
+
+Performance metrics captured across a comprehensive load test of **500,000 total requests**.
+
+### 📈 Throughput & Execution
+
+| Metric | Value |
+| :--- | :--- |
+| **Total Requests** | 500,000 |
+| **Total Wall Clock Time** | 227,939 ms (~227.94s) |
+| **Throughput** | **2,193.57 req/sec** |
+
+### ⏱️ Latency Percentiles
+
+| Percentile / Metric | Latency |
+| :--- | :--- |
+| **Average Latency** | 22.75 ms |
+| **P95 Latency** | 36.25 ms |
+| **P99 Latency** | 47.59 ms |
+| **Fastest Request** | 7.75 ms |
+| **Slowest Request** | 269.22 ms |
