@@ -29,3 +29,5 @@ A simple URL shortner which is build to learn the ORM using sequlize orm in node
 | **8 Cores** | 500,000 | 190,483 | 2,624.91 | 18.99 ms | 1.07 ms | 419.92 ms | 46.03 ms | 69.47 ms |
 | **16 Cores** | 500,000 | 212,809 | 2,349.52 | 21.22 ms | 1.01 ms | 818.83 ms | 48.40 ms | 71.10 ms |
 
+192.168.1.78:3000/gMolEPBvZYW0(my ip)
+
