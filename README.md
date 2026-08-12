@@ -32,6 +32,6 @@ A simple URL shortner which is build to learn the ORM using sequlize orm in node
 ON 20 Core pc
 | Configuration | Total Requests | Total Time (ms) | Throughput (req/sec) | Avg Latency | Fastest Request | Slowest Request | P95 Latency | P99 Latency |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **20 Cores (Optimized)** | 1,000,000 | 57,224 | 17,475.19 | 2.85 ms | 0.52 ms | 93.06 ms | 4.89 ms | 8.37 ms |
+| **20 Cores** | 1,000,000 | 57,224 | 17,475.19 | 2.85 ms | 0.52 ms | 93.06 ms | 4.89 ms | 8.37 ms |
 
 
