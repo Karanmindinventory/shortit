@@ -46,7 +46,7 @@ All tests below ran against a live MySQL database with real reads and writes. No
 
 Green = best value in that column. Red = worst value in that column.
 
-### Machine 1: 2014 Mac Mini (Intel i5-4278U, 2 Physical Cores, 8GB DDR3)
+### Machine 1: 2014 Mac Mini (Intel i5-4278U, 2 Physical Cores, 8GB DDR3) (Here Database is Globally deployed)
 
 | Configuration | Total Requests | Total Time (ms) | Throughput (req/sec) | Avg Latency | Fastest | Slowest | P95 | P99 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -64,7 +64,7 @@ Note: Performance peaks at 2 cores and degrades beyond that because this machine
 
 ---
 
-### Machine 2: 20-Core Server
+### Machine 2: 20-Core Server (Here Database is Globally deployed)
 
 | Configuration | Total Requests | Total Time (ms) | Throughput (req/sec) | Avg Latency | Fastest | Slowest | P95 | P99 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
