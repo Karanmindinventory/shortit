@@ -1,6 +1,8 @@
 const { insertUrl, getUrl } = require("../db/shardingManager");
 const { encryptorFunction, decryptFunction } = require("../encryptor/encryptorFunction");
 const { Metadata } = require("../db/models");
+const useragent = require("express-useragent");
+const { getAnalyticsModel } = require("../db/mongoConfig");
 
 async function shortenUrl(req, res) {
     try {
@@ -31,6 +33,7 @@ async function shortenUrl(req, res) {
 }
 
 async function redirectUrl(req, res) {
+    const startTime = performance.now();
     try {
         const { code } = req.params;
         const { table_id, id } = decryptFunction(code);
@@ -42,7 +45,30 @@ async function redirectUrl(req, res) {
         const originalUrl = await getUrl(table_id, id);
 
         if (originalUrl) {
-            return res.redirect(originalUrl);
+            res.redirect(originalUrl);
+            const endTime = performance.now();
+
+            setImmediate(async () => {
+                try {
+                    const latency_ms = endTime - startTime;
+                    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
+
+                    const uaString = req.headers['user-agent'] || '';
+                    const parsedUa = useragent.default ? useragent.default.parse(uaString) : (useragent.parse ? useragent.parse(uaString) : null);
+                    const browser = parsedUa ? parsedUa.browser : "Unknown";
+
+                    const AnalyticsModel = getAnalyticsModel(table_id);
+                    await AnalyticsModel.create({
+                        code: code,
+                        ip: ip,
+                        browser: browser,
+                        latency_ms: latency_ms
+                    });
+                } catch (trackError) {
+                    console.error("Async Tracking Error:", trackError);
+                }
+            });
+
         } else {
             return res.status(404).json({ error: "URL not found" });
         }
@@ -57,12 +83,12 @@ async function getUserUrls(req, res) {
         if (!req.user || !req.user.id) {
             return res.status(401).json({ error: "Unauthorized" });
         }
-        
+
         const urls = await Metadata.findAll({
             where: { user_id: req.user.id },
             order: [['createdAt', 'DESC']]
         });
-        
+
         res.json(urls);
     } catch (error) {
         console.error("Error fetching user URLs:", error);
@@ -70,8 +96,58 @@ async function getUserUrls(req, res) {
     }
 }
 
+async function getAnalytics(req, res) {
+    try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const { code } = req.params;
+        const { table_id } = decryptFunction(code);
+        const AnalyticsModel = getAnalyticsModel(table_id);
+
+        const stats = await AnalyticsModel.aggregate([
+            { $match: { code: code } },
+            {
+                $group: {
+                    _id: null,
+                    totalClicks: { $sum: 1 },
+                    avgLatency: { $avg: "$latency_ms" },
+                    browsers: { $push: "$browser" }
+                }
+            }
+        ]);
+
+        if (stats.length === 0) {
+            return res.json({ totalClicks: 0, avgLatency: 0, browserStats: [] });
+        }
+
+        const data = stats[0];
+
+        const browserCounts = {};
+        data.browsers.forEach(b => {
+            browserCounts[b] = (browserCounts[b] || 0) + 1;
+        });
+        const browserStats = Object.keys(browserCounts).map(b => ({
+            name: b,
+            percentage: ((browserCounts[b] / data.totalClicks) * 100).toFixed(1)
+        }));
+
+        res.json({
+            totalClicks: data.totalClicks,
+            avgLatency: data.avgLatency ? data.avgLatency.toFixed(2) : 0,
+            browserStats
+        });
+
+    } catch (error) {
+        console.error("Error fetching analytics:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
 module.exports = {
     shortenUrl,
     redirectUrl,
-    getUserUrls
+    getUserUrls,
+    getAnalytics
 };

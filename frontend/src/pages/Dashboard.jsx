@@ -5,6 +5,11 @@ export default function Dashboard({ token, logout }) {
     const [newUrl, setNewUrl] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+    
+    // Stats Modal State
+    const [statsCode, setStatsCode] = useState(null);
+    const [statsData, setStatsData] = useState(null);
+    const [statsLoading, setStatsLoading] = useState(false);
 
     const fetchUrls = async () => {
         try {
@@ -40,11 +45,11 @@ export default function Dashboard({ token, logout }) {
                 },
                 body: JSON.stringify({ url: newUrl })
             });
-            
+
             const data = await response.json();
             if (response.ok) {
                 setNewUrl('');
-                fetchUrls(); // Refresh the list
+                fetchUrls();
             } else {
                 setError(data.error || 'Failed to shorten URL');
             }
@@ -56,7 +61,32 @@ export default function Dashboard({ token, logout }) {
     const handleCopy = (code) => {
         const shortUrl = `http://localhost:3000/${code}`;
         navigator.clipboard.writeText(shortUrl);
-        // Optional: show a small toast here if we had one
+    };
+
+    const handleViewStats = async (code) => {
+        setStatsCode(code);
+        setStatsLoading(true);
+        try {
+            const response = await fetch(`http://localhost:3000/analytics/${code}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setStatsData(data);
+            } else {
+                setStatsData(null);
+            }
+        } catch(err) {
+            console.error("Error fetching stats", err);
+            setStatsData(null);
+        } finally {
+            setStatsLoading(false);
+        }
+    };
+
+    const closeStats = () => {
+        setStatsCode(null);
+        setStatsData(null);
     };
 
     return (
@@ -110,9 +140,16 @@ export default function Dashboard({ token, logout }) {
                                                 localhost:3000/{item.short_code}
                                             </a>
                                         </td>
-                                        <td className="action-col">
-                                            <button 
-                                                onClick={() => handleCopy(item.short_code)} 
+                                        <td className="action-col" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                            <button
+                                                onClick={() => handleViewStats(item.short_code)}
+                                                className="secondary-btn"
+                                                title="View Analytics"
+                                            >
+                                                View
+                                            </button>
+                                            <button
+                                                onClick={() => handleCopy(item.short_code)}
                                                 className="copy-btn"
                                                 title="Copy to clipboard"
                                             >
@@ -126,6 +163,57 @@ export default function Dashboard({ token, logout }) {
                     )}
                 </div>
             </div>
+
+            {/* Stats Modal */}
+            {statsCode && (
+                <div className="modal-overlay" onClick={closeStats}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Analytics for: {statsCode}</h2>
+                            <button className="close-btn" onClick={closeStats}>&times;</button>
+                        </div>
+                        {statsLoading ? (
+                            <p className="loading">Loading stats...</p>
+                        ) : statsData ? (
+                            <div className="stats-body">
+                                <div className="stats-grid">
+                                    <div className="stat-box">
+                                        <h3>Total Clicks</h3>
+                                        <p className="stat-val">{statsData.totalClicks}</p>
+                                    </div>
+                                    <div className="stat-box">
+                                        <h3>Avg Latency</h3>
+                                        <p className="stat-val">{statsData.avgLatency} ms</p>
+                                    </div>
+                                </div>
+                                
+                                {statsData.totalClicks > 0 ? (
+                                    <>
+                                        <h3 className="section-title">Browsers</h3>
+                                        <div className="bars-container">
+                                            {statsData.browserStats.map(b => (
+                                                <div className="bar-row" key={b.name}>
+                                                    <div className="bar-label">
+                                                        <span>{b.name}</span>
+                                                        <span>{b.percentage}%</span>
+                                                    </div>
+                                                    <div className="bar-bg">
+                                                        <div className="bar-fill" style={{ width: `${b.percentage}%` }}></div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <p className="empty-state">No clicks recorded yet.</p>
+                                )}
+                            </div>
+                        ) : (
+                            <p className="error-message">Could not load stats.</p>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
