@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
     "express": "^5.2.1",
     "hashids": "^2.3.0",
     "jsonwebtoken": "^9.0.3",

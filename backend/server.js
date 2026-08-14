@@ -2,8 +2,9 @@ const express = require('express');
 const cluster = require('cluster');
 const { initializeShards } = require('./db/shardingManager');
 const { sequelizeConnection } = require('./db/config');
-const { shortenUrl, redirectUrl } = require('./controllers/urlController');
+const { shortenUrl, redirectUrl, getUserUrls } = require('./controllers/urlController');
 const { registerUser, loginUser } = require('./controllers/authController');
+const cors = require('cors');
 const { requireAuth } = require('./middleware/auth');
 const { syncModels } = require('./db/models');
 
@@ -34,12 +35,14 @@ async function startServer() {
             });
         } else {
             const app = express();
+            app.use(cors({ origin: 'http://localhost:3001', credentials: true }));
             app.use(express.json());
 
             app.post('/register', registerUser);
             app.post('/login', loginUser);
 
             app.post('/shorten', requireAuth, shortenUrl);
+            app.get('/urls', requireAuth, getUserUrls);
             app.get('/:code', redirectUrl);
 
             app.listen(PORT, () => {

@@ -52,7 +52,26 @@ async function redirectUrl(req, res) {
     }
 }
 
+async function getUserUrls(req, res) {
+    try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        
+        const urls = await Metadata.findAll({
+            where: { user_id: req.user.id },
+            order: [['createdAt', 'DESC']]
+        });
+        
+        res.json(urls);
+    } catch (error) {
+        console.error("Error fetching user URLs:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
 module.exports = {
     shortenUrl,
-    redirectUrl
+    redirectUrl,
+    getUserUrls
 };
