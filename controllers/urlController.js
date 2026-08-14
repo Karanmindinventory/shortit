@@ -1,5 +1,6 @@
 const { insertUrl, getUrl } = require("../db/shardingManager");
 const { encryptorFunction, decryptFunction } = require("../encryptor/encryptorFunction");
+const { Metadata } = require("../db/models");
 
 async function shortenUrl(req, res) {
     try {
@@ -9,6 +10,14 @@ async function shortenUrl(req, res) {
         }
         const { table_id, id } = await insertUrl(url);
         const shortCode = encryptorFunction(table_id, id);
+
+        if (req.user && req.user.id) {
+            await Metadata.create({
+                user_id: req.user.id,
+                short_code: shortCode,
+                original_url: url
+            });
+        }
 
         res.json({
             original_url: url,

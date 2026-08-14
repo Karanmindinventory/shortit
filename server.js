@@ -3,6 +3,9 @@ const cluster = require('cluster');
 const { initializeShards } = require('./db/shardingManager');
 const { sequelizeConnection } = require('./db/config');
 const { shortenUrl, redirectUrl } = require('./controllers/urlController');
+const { registerUser, loginUser } = require('./controllers/authController');
+const { requireAuth } = require('./middleware/auth');
+const { syncModels } = require('./db/models');
 
 const PORT = process.env.PORT || 3000;
 const NUM_WORKERS = 2;
@@ -12,6 +15,9 @@ async function startServer() {
         if (cluster.isPrimary) {
             await sequelizeConnection.authenticate();
             console.log("SQL IS CONNECTED SUCCESSFULLY");
+
+            await syncModels();
+            console.log("Auth models synchronized");
 
             await initializeShards();
             console.log("Sharding metadata and tables initialized");
@@ -30,7 +36,10 @@ async function startServer() {
             const app = express();
             app.use(express.json());
 
-            app.post('/shorten', shortenUrl);
+            app.post('/register', registerUser);
+            app.post('/login', loginUser);
+
+            app.post('/shorten', requireAuth, shortenUrl);
             app.get('/:code', redirectUrl);
 
             app.listen(PORT, () => {
