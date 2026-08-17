@@ -5,8 +5,7 @@ export default function Dashboard({ token, logout }) {
     const [newUrl, setNewUrl] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
-    
-    // Stats Modal State
+
     const [statsCode, setStatsCode] = useState(null);
     const [statsData, setStatsData] = useState(null);
     const [statsLoading, setStatsLoading] = useState(false);
@@ -76,7 +75,7 @@ export default function Dashboard({ token, logout }) {
             } else {
                 setStatsData(null);
             }
-        } catch(err) {
+        } catch (err) {
             console.error("Error fetching stats", err);
             setStatsData(null);
         } finally {
@@ -164,7 +163,6 @@ export default function Dashboard({ token, logout }) {
                 </div>
             </div>
 
-            {/* Stats Modal */}
             {statsCode && (
                 <div className="modal-overlay" onClick={closeStats}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -186,7 +184,7 @@ export default function Dashboard({ token, logout }) {
                                         <p className="stat-val">{statsData.avgLatency} ms</p>
                                     </div>
                                 </div>
-                                
+
                                 {statsData.totalClicks > 0 ? (
                                     <>
                                         <h3 className="section-title">Browsers</h3>
