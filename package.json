@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cd backend && npm install",
+    "build": "echo 'No build step required'",
     "start": "cd backend && node server.js"
   },
   "engines": {
