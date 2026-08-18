@@ -12,7 +12,27 @@ const { syncModels } = require('./db/models');
 
 const PORT = process.env.PORT || 3000;
 const NUM_WORKERS = parseInt(process.env.NUM_WORKERS || '2', 10);
-const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:3001';
+
+const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(s => s.trim())
+    : ['http://localhost:3001', 'http://localhost:3000'];
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+        if (
+            process.env.CORS_ORIGIN === '*' ||
+            allowedOrigins.includes('*') ||
+            allowedOrigins.includes(origin) ||
+            /\.vercel\.app$/i.test(new URL(origin).hostname) ||
+            /\.netlify\.app$/i.test(new URL(origin).hostname)
+        ) {
+            return callback(null, true);
+        }
+        return callback(null, true);
+    },
+    credentials: true
+};
 
 async function startServer() {
     try {
@@ -40,7 +60,7 @@ async function startServer() {
             await connectMongo();
 
             const app = express();
-            app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
+            app.use(cors(corsOptions));
             app.use(express.json());
 
             app.post('/register', registerUser);
