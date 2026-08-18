@@ -3,6 +3,12 @@ const jwt = require("jsonwebtoken");
 const { User } = require("../db/models");
 const { JWT_SECRET } = require("../middleware/auth");
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const isValidEmail = (email) => {
+    return typeof email === 'string' && EMAIL_REGEX.test(email.trim());
+};
+
 const registerUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -10,13 +16,18 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ error: "Email and password are required" });
         }
 
-        const existingUser = await User.findOne({ where: { email } });
+        const cleanEmail = email.toLowerCase().trim();
+        if (!isValidEmail(cleanEmail)) {
+            return res.status(400).json({ error: "Please enter a valid email address" });
+        }
+
+        const existingUser = await User.findOne({ where: { email: cleanEmail } });
         if (existingUser) {
             return res.status(400).json({ error: "User already exists" });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await User.create({ email, password: hashedPassword });
+        const user = await User.create({ email: cleanEmail, password: hashedPassword });
 
         const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
 
@@ -34,7 +45,12 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ error: "Email and password are required" });
         }
 
-        const user = await User.findOne({ where: { email } });
+        const cleanEmail = email.toLowerCase().trim();
+        if (!isValidEmail(cleanEmail)) {
+            return res.status(400).json({ error: "Please enter a valid email address" });
+        }
+
+        const user = await User.findOne({ where: { email: cleanEmail } });
         if (!user) {
             return res.status(401).json({ error: "Invalid credentials" });
         }

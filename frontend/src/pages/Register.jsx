@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Register({ login, setCurrentView }) {
     const [email, setEmail] = useState('');
@@ -16,6 +17,11 @@ export default function Register({ login, setCurrentView }) {
 
         if (!email.trim() || !password || !confirmPassword) {
             setError('Please fill in all fields.');
+            return;
+        }
+
+        if (!EMAIL_REGEX.test(email.trim())) {
+            setError('Please enter a valid email address (e.g. user@example.com).');
             return;
         }
 
