@@ -29,7 +29,6 @@ function getAnalyticsModel(table_id) {
         return modelsCache[table_id];
     }
 
-    // Create model dynamically for the specific table/shard
     const model = mongoose.model(`Analytics_${table_id}`, analyticsSchema, table_id);
     modelsCache[table_id] = model;
     return model;
