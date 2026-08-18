@@ -1,8 +1,9 @@
+require('dotenv').config();
 const express = require('express');
 const cluster = require('cluster');
 const { initializeShards } = require('./db/shardingManager');
 const { sequelizeConnection } = require('./db/config');
-const { shortenUrl, redirectUrl, getUserUrls, getAnalytics } = require('./controllers/urlController');
+const { shortenUrl, redirectUrl, getUserUrls, updateUserUrl, removeUserUrl, deleteUserUrl, getAnalytics } = require('./controllers/urlController');
 const { registerUser, loginUser } = require('./controllers/authController');
 const { connectMongo } = require('./db/mongoConfig');
 const cors = require('cors');
@@ -10,7 +11,8 @@ const { requireAuth } = require('./middleware/auth');
 const { syncModels } = require('./db/models');
 
 const PORT = process.env.PORT || 3000;
-const NUM_WORKERS = 2;
+const NUM_WORKERS = parseInt(process.env.NUM_WORKERS || '2', 10);
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:3001';
 
 async function startServer() {
     try {
@@ -38,7 +40,7 @@ async function startServer() {
             await connectMongo();
 
             const app = express();
-            app.use(cors({ origin: 'http://localhost:3001', credentials: true }));
+            app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
             app.use(express.json());
 
             app.post('/register', registerUser);
@@ -46,6 +48,9 @@ async function startServer() {
 
             app.post('/shorten', requireAuth, shortenUrl);
             app.get('/urls', requireAuth, getUserUrls);
+            app.put('/urls/:id', requireAuth, updateUserUrl);
+            app.delete('/urls/:id/remove', requireAuth, removeUserUrl);
+            app.delete('/urls/:id/delete', requireAuth, deleteUserUrl);
             app.get('/analytics/:code', requireAuth, getAnalytics);
             app.get('/:code', redirectUrl);
 

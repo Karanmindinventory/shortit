@@ -1,6 +1,9 @@
+require('dotenv').config();
 const Hashids = require("hashids");
 
-const hashids = new Hashids("dont-stall-it-gonna-fall", 12);
+const salt = process.env.HASHIDS_SALT || "dont-stall-it-gonna-fall";
+const minLength = parseInt(process.env.HASHIDS_MIN_LENGTH || "12", 10);
+const hashids = new Hashids(salt, minLength);
 
 function encryptorFunction(table_id, id) {
     const valueString = table_id + "0" + id;

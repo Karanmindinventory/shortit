@@ -1,3 +1,4 @@
+require('dotenv').config();
 const jwt = require("jsonwebtoken");
 
 const JWT_SECRET = process.env.JWT_SECRET || "HERE_IM_G0NNA_STORE_SUPER_SECRET_KEY_DONT_STALL_IT_GONNA_FALL";

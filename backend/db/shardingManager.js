@@ -110,8 +110,26 @@ async function getUrl(table_id, id) {
     return null;
 }
 
+async function updateUrl(table_id, id, newUrl) {
+    const updateQuery = `UPDATE \`${table_id}\` SET original_url = ? WHERE id = ?`;
+    await sequelizeConnection.query(updateQuery, {
+        replacements: [newUrl, id],
+        type: QueryTypes.UPDATE
+    });
+}
+
+async function deleteUrl(table_id, id) {
+    const deleteQuery = `DELETE FROM \`${table_id}\` WHERE id = ?`;
+    await sequelizeConnection.query(deleteQuery, {
+        replacements: [id],
+        type: QueryTypes.DELETE
+    });
+}
+
 module.exports = {
     initializeShards,
     insertUrl,
-    getUrl
+    getUrl,
+    updateUrl,
+    deleteUrl
 };

@@ -1,8 +1,13 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 
 const connectMongo = async () => {
     try {
-        await mongoose.connect('mongodb://127.0.0.1:27017/shortit_analytics');
+        const mongoUri = process.env.MONGO_URI;
+        if (!mongoUri) {
+            throw new Error("MONGO_URI is not defined in environment variables");
+        }
+        await mongoose.connect(mongoUri);
         console.log("MongoDB IS CONNECTED SUCCESSFULLY");
     } catch (error) {
         console.error("MongoDB connection failed:", error);

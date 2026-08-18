@@ -1,18 +1,27 @@
 import React, { useState } from 'react';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+
 export default function Login({ login, setCurrentView }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
+
+        if (!email.trim() || !password.trim()) {
+            setError('Please fill in both email and password.');
+            return;
+        }
+
         try {
-            const response = await fetch('http://localhost:3000/login', {
+            const response = await fetch(`${API_URL}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email: email.trim(), password })
             });
 
             const data = await response.json();
@@ -31,27 +40,44 @@ export default function Login({ login, setCurrentView }) {
             <div className="auth-card">
                 <h2>Welcome Back</h2>
                 <p>Login to manage your shortened URLs</p>
-                {error && <div className="error-message">{error}</div>}
-                <form onSubmit={handleSubmit} className="auth-form">
+                {error && <div className="error-message red-error">{error}</div>}
+                <form onSubmit={handleSubmit} className="auth-form" noValidate>
                     <div className="input-group">
                         <label>Email</label>
                         <input
                             type="email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
+                            onChange={(e) => { setEmail(e.target.value); setError(null); }}
                             placeholder="Enter your email"
                         />
                     </div>
-                    <div className="input-group">
+                    <div className="input-group password-group">
                         <label>Password</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            placeholder="Enter your password"
-                        />
+                        <div className="password-wrapper">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                value={password}
+                                onChange={(e) => { setPassword(e.target.value); setError(null); }}
+                                placeholder="Enter your password"
+                            />
+                            <button
+                                type="button"
+                                className="toggle-password-btn"
+                                onClick={() => setShowPassword(!showPassword)}
+                                title={showPassword ? "Hide password" : "Show password"}
+                            >
+                                {showPassword ? (
+                                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-10-7-10-7a19.46 19.46 0 014.288-5.323m3.843-2.18A9.97 9.97 0 0112 4c7 0 10 7 10 7a19.46 19.46 0 01-3.23 4.298m-3.8 2.219L3 3l18 18" />
+                                    </svg>
+                                ) : (
+                                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                )}
+                            </button>
+                        </div>
                     </div>
                     <button type="submit" className="primary-btn">Login</button>
                 </form>

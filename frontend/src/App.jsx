@@ -7,7 +7,7 @@ import Dashboard from './pages/Dashboard';
 
 function App() {
   const { isAuthenticated, token, login, logout } = useAuth();
-  const [currentView, setCurrentView] = useState('login'); // 'login' or 'register'
+  const [currentView, setCurrentView] = useState('login');
 
   if (isAuthenticated) {
     return <Dashboard token={token} logout={logout} />;

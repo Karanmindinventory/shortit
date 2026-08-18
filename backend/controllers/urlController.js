@@ -1,28 +1,46 @@
-const { insertUrl, getUrl } = require("../db/shardingManager");
+const { insertUrl, getUrl, updateUrl, deleteUrl } = require("../db/shardingManager");
 const { encryptorFunction, decryptFunction } = require("../encryptor/encryptorFunction");
 const { Metadata } = require("../db/models");
 const useragent = require("express-useragent");
 const { getAnalyticsModel } = require("../db/mongoConfig");
 
+function validateAndNormalizeUrl(input) {
+    if (!input || typeof input !== 'string' || !input.trim()) {
+        return null;
+    }
+    let trimmed = input.trim();
+    if (!/^https?:\/\//i.test(trimmed)) {
+        trimmed = 'http://' + trimmed;
+    }
+    try {
+        const parsed = new URL(trimmed);
+        if (parsed.hostname && parsed.hostname.includes('.') && parsed.hostname.length > 3) {
+            return parsed.toString();
+        }
+    } catch (_) {}
+    return null;
+}
+
 async function shortenUrl(req, res) {
     try {
         const { url } = req.body;
-        if (!url) {
-            return res.status(400).json({ error: "URL is required" });
+        const normalizedUrl = validateAndNormalizeUrl(url);
+        if (!normalizedUrl) {
+            return res.status(400).json({ error: "Invalid URL format. Please enter a valid URL (e.g. https://example.com)." });
         }
-        const { table_id, id } = await insertUrl(url);
+        const { table_id, id } = await insertUrl(normalizedUrl);
         const shortCode = encryptorFunction(table_id, id);
 
         if (req.user && req.user.id) {
             await Metadata.create({
                 user_id: req.user.id,
                 short_code: shortCode,
-                original_url: url
+                original_url: normalizedUrl
             });
         }
 
         res.json({
-            original_url: url,
+            original_url: normalizedUrl,
             short_url: `http://${req.headers.host}/${shortCode}`,
             code: shortCode
         });
@@ -96,6 +114,95 @@ async function getUserUrls(req, res) {
     }
 }
 
+async function updateUserUrl(req, res) {
+    try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const { id } = req.params;
+        const { original_url } = req.body;
+
+        const normalizedUrl = validateAndNormalizeUrl(original_url);
+        if (!normalizedUrl) {
+            return res.status(400).json({ error: "Invalid URL format. Please enter a valid URL (e.g. https://example.com)." });
+        }
+
+        const urlRecord = await Metadata.findOne({
+            where: { id, user_id: req.user.id }
+        });
+
+        if (!urlRecord) {
+            return res.status(404).json({ error: "URL record not found" });
+        }
+
+        await urlRecord.update({ original_url: normalizedUrl });
+
+        const { table_id, id: shardId } = decryptFunction(urlRecord.short_code);
+        if (table_id && shardId && table_id !== 'undefined') {
+            await updateUrl(table_id, shardId, normalizedUrl);
+        }
+
+        res.json(urlRecord);
+    } catch (error) {
+        console.error("Error updating URL:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+async function removeUserUrl(req, res) {
+    try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const { id } = req.params;
+        const urlRecord = await Metadata.findOne({
+            where: { id, user_id: req.user.id }
+        });
+
+        if (!urlRecord) {
+            return res.status(404).json({ error: "URL record not found" });
+        }
+
+        await urlRecord.destroy();
+
+        res.json({ message: "URL removed from user dashboard" });
+    } catch (error) {
+        console.error("Error removing URL:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+async function deleteUserUrl(req, res) {
+    try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const { id } = req.params;
+        const urlRecord = await Metadata.findOne({
+            where: { id, user_id: req.user.id }
+        });
+
+        if (!urlRecord) {
+            return res.status(404).json({ error: "URL record not found" });
+        }
+
+        const { table_id, id: shardId } = decryptFunction(urlRecord.short_code);
+        if (table_id && shardId && table_id !== 'undefined') {
+            await deleteUrl(table_id, shardId);
+        }
+
+        await urlRecord.destroy();
+
+        res.json({ message: "URL deleted permanently from both metadata and sharded storage" });
+    } catch (error) {
+        console.error("Error deleting URL:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
 async function getAnalytics(req, res) {
     try {
         if (!req.user || !req.user.id) {
@@ -149,5 +256,8 @@ module.exports = {
     shortenUrl,
     redirectUrl,
     getUserUrls,
+    updateUserUrl,
+    removeUserUrl,
+    deleteUserUrl,
     getAnalytics
 };

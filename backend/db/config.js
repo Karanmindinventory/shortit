@@ -1,10 +1,20 @@
+require('dotenv').config();
 const { Sequelize } = require("sequelize");
 
-const sequelizeConnection = new Sequelize('shortIT', 'karan', 'karan8141', {
-    host: '127.0.0.1',
-    port: '3306',
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+    throw new Error("DATABASE_URL is not defined in environment variables");
+}
+
+const sequelizeConnection = new Sequelize(databaseUrl, {
     dialect: 'mysql',
-    logging: false
+    logging: false,
+    dialectOptions: {
+        ssl: {
+            rejectUnauthorized: false
+        }
+    }
 });
 
 module.exports = { sequelizeConnection };
