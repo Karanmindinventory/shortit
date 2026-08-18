@@ -4,9 +4,14 @@ const { User } = require("../db/models");
 const { JWT_SECRET } = require("../middleware/auth");
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PASSWORD_REGEX = /^(?=.*[a-zA-Z])(?=.*\d).{6,}$/;
 
 const isValidEmail = (email) => {
     return typeof email === 'string' && EMAIL_REGEX.test(email.trim());
+};
+
+const isValidPassword = (password) => {
+    return typeof password === 'string' && PASSWORD_REGEX.test(password);
 };
 
 const registerUser = async (req, res) => {
@@ -19,6 +24,12 @@ const registerUser = async (req, res) => {
         const cleanEmail = email.toLowerCase().trim();
         if (!isValidEmail(cleanEmail)) {
             return res.status(400).json({ error: "Please enter a valid email address" });
+        }
+
+        if (!isValidPassword(password)) {
+            return res.status(400).json({
+                error: "Password must be at least 6 characters long and contain both letters and numbers"
+            });
         }
 
         const existingUser = await User.findOne({ where: { email: cleanEmail } });

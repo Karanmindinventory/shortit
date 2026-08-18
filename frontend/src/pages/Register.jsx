@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PASSWORD_REGEX = /^(?=.*[a-zA-Z])(?=.*\d).{6,}$/;
 
 export default function Register({ login, setCurrentView }) {
     const [email, setEmail] = useState('');
@@ -22,6 +23,11 @@ export default function Register({ login, setCurrentView }) {
 
         if (!EMAIL_REGEX.test(email.trim())) {
             setError('Please enter a valid email address (e.g. user@example.com).');
+            return;
+        }
+
+        if (!PASSWORD_REGEX.test(password)) {
+            setError('Password must be at least 6 characters long and contain both letters and numbers.');
             return;
         }
 
